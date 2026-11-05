@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import authRoutes from "./routes/auth.routes.js";
 
 const app = express();
 
@@ -39,6 +40,9 @@ app.get("/api/health", (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+// Authentication routes
+app.use("/api/auth", authRoutes);
 
 // Handle unknown routes
 app.use((req, res) => {

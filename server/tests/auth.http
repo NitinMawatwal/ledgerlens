@@ -1,0 +1,46 @@
+### 1. Health Check
+GET http://localhost:5000/api/health
+
+
+### 2. Register User
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "LedgerLens Owner",
+  "email": "test1@example.com",
+  "password": "test1234",
+  "workspaceName": "Demo Home Brand"
+}
+
+
+### 3. Login
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "ledgerlens.test@example.com",
+  "password": "StrongTestPassword123!"
+}
+
+### 4. Get Current User
+GET http://localhost:5000/api/auth/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YWVjZmZhOGQ0MTA0NDgzNjljMWE4ZWMiLCJ3b3Jrc3BhY2VJZCI6IjZhZWNmZmE4ZDQxMDQ0ODM2OWMxYThlYiIsInJvbGUiOiJjb19mb3VuZGVyIiwiaWF0IjoxNzkzOTE3MjA2LCJleHAiOjE3OTQwMDM2MDYsImF1ZCI6ImxlZGdlcmxlbnMtY2xpZW50IiwiaXNzIjoibGVkZ2VybGVucyJ9.6pnzB0wFXTfIjxMn-OQOWuTlqUnLAUiqszsXc1Alfkw
+
+### 5. Login with incorrect password
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "ledgerlens.test@example.com",
+  "password": "WrongPassword123!"
+}
+
+
+### 6. Access protected route without token
+GET http://localhost:5000/api/auth/me
+
+
+### 7. Access protected route with invalid token
+GET http://localhost:5000/api/auth/me
+Authorization: Bearer invalid-token
