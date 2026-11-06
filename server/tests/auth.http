@@ -1,46 +1,75 @@
+
 ### 1. Health Check
 GET http://localhost:5000/api/health
 
 
-### 2. Register User
+### 2. Register New Test User
 POST http://localhost:5000/api/auth/register
 Content-Type: application/json
 
 {
-  "name": "LedgerLens Owner",
-  "email": "test1@example.com",
-  "password": "test1234",
-  "workspaceName": "Demo Home Brand"
+  "name": "LedgerLens Demo Owner",
+  "email": "YOUR_TEST_EMAIL",
+  "password": "YOUR_TEST_PASSWORD",
+  "workspaceName": "LedgerLens Demo Workspace"
 }
 
 
 ### 3. Login
+# @name login
 POST http://localhost:5000/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "ledgerlens.test@example.com",
-  "password": "StrongTestPassword123!"
+  "email": "YOUR_TEST_EMAIL",
+  "password": "YOUR_TEST_PASSWORD"
 }
+
 
 ### 4. Get Current User
 GET http://localhost:5000/api/auth/me
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YWVjZmZhOGQ0MTA0NDgzNjljMWE4ZWMiLCJ3b3Jrc3BhY2VJZCI6IjZhZWNmZmE4ZDQxMDQ0ODM2OWMxYThlYiIsInJvbGUiOiJjb19mb3VuZGVyIiwiaWF0IjoxNzkzOTE3MjA2LCJleHAiOjE3OTQwMDM2MDYsImF1ZCI6ImxlZGdlcmxlbnMtY2xpZW50IiwiaXNzIjoibGVkZ2VybGVucyJ9.6pnzB0wFXTfIjxMn-OQOWuTlqUnLAUiqszsXc1Alfkw
+Authorization: Bearer YOUR_NEW_JWT_TOKEN
 
-### 5. Login with incorrect password
+
+### 5. Login with Incorrect Password (Expected 401)
 POST http://localhost:5000/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "ledgerlens.test@example.com",
+  "email": "YOUR_TEST_EMAIL",
   "password": "WrongPassword123!"
 }
 
 
-### 6. Access protected route without token
+### 6. Access Protected Route Without Token (Expected 401)
 GET http://localhost:5000/api/auth/me
 
 
-### 7. Access protected route with invalid token
+### 7. Access Protected Route with Invalid Token (Expected 401)
 GET http://localhost:5000/api/auth/me
 Authorization: Bearer invalid-token
+
+
+### 1. Upload an Orders CSV
+POST http://localhost:5000/api/uploads
+Authorization: Bearer YOUR_NEW_JWT_TOKEN
+Content-Type: multipart/form-data; boundary=LedgerLensBoundary
+
+--LedgerLensBoundary
+Content-Disposition: form-data; name="fileType"
+
+orders
+--LedgerLensBoundary
+Content-Disposition: form-data; name="file"; filename="orders.csv"
+Content-Type: text/csv
+
+order_id,customer_name,amount
+ORD001,John,1200
+ORD002,David,1500
+ORD003,Alex,2500
+--LedgerLensBoundary--
+
+
+### 2. Get Workspace Uploads
+GET http://localhost:5000/api/uploads
+Authorization: Bearer YOUR_NEW_JWT_TOKEN

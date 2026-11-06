@@ -4,6 +4,8 @@ import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import authRoutes from "./routes/auth.routes.js";
+import uploadRoutes from "./routes/upload.routes.js";
+import columnMappingRoutes from "./routes/column-mapping.routes.js";
 
 const app = express();
 
@@ -31,6 +33,7 @@ const apiLimiter = rateLimit({
 });
 
 app.use("/api", apiLimiter);
+app.use("/api/mappings", columnMappingRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {
@@ -43,6 +46,7 @@ app.get("/api/health", (req, res) => {
 
 // Authentication routes
 app.use("/api/auth", authRoutes);
+app.use("/api/uploads", uploadRoutes);
 
 // Handle unknown routes
 app.use((req, res) => {
