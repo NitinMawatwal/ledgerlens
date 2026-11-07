@@ -51,6 +51,7 @@ const STANDARD_FIELDS = {
     "trackingId",
     "invoiceNumber",
     "invoiceDate",
+    "shipmentDate",
     "billedWeight",
     "zone",
     "freightCharge",
@@ -59,6 +60,8 @@ const STANDARD_FIELDS = {
     "additionalCharges",
     "totalFreight",
     "courier",
+    "isRto",
+    "codAmount",
   ],
 
   returns: [
@@ -78,11 +81,7 @@ const createError = (message, status = 400) => {
 };
 
 const validateMappings = (mappings, headers, fileType) => {
-  if (
-    !mappings ||
-    typeof mappings !== "object" ||
-    Array.isArray(mappings)
-  ) {
+  if (!mappings || typeof mappings !== "object" || Array.isArray(mappings)) {
     throw createError("Mappings must be a valid object");
   }
 
@@ -102,23 +101,18 @@ const validateMappings = (mappings, headers, fileType) => {
 
   for (const [standardField, sourceHeader] of entries) {
     if (!allowedFields.includes(standardField)) {
-      throw createError(
-        `Invalid standard field: ${standardField}`
-      );
+      throw createError(`Invalid standard field: ${standardField}`);
     }
 
-    if (
-      typeof sourceHeader !== "string" ||
-      !headers.includes(sourceHeader)
-    ) {
+    if (typeof sourceHeader !== "string" || !headers.includes(sourceHeader)) {
       throw createError(
-        `Invalid source column for ${standardField}: ${sourceHeader}`
+        `Invalid source column for ${standardField}: ${sourceHeader}`,
       );
     }
 
     if (usedHeaders.has(sourceHeader)) {
       throw createError(
-        `Source column "${sourceHeader}" is mapped more than once`
+        `Source column "${sourceHeader}" is mapped more than once`,
       );
     }
 
@@ -152,9 +146,7 @@ const createMappingVersion = async ({
         .sort({ version: -1 })
         .session(session);
 
-      const nextVersion = latestMapping
-        ? latestMapping.version + 1
-        : 1;
+      const nextVersion = latestMapping ? latestMapping.version + 1 : 1;
 
       await ColumnMapping.updateMany(
         {
@@ -166,7 +158,7 @@ const createMappingVersion = async ({
         {
           $set: { isActive: false },
         },
-        { session }
+        { session },
       );
 
       const [newMapping] = await ColumnMapping.create(
@@ -184,7 +176,7 @@ const createMappingVersion = async ({
             rollbackFromVersion,
           },
         ],
-        { session }
+        { session },
       );
 
       savedMapping = newMapping;
@@ -195,7 +187,7 @@ const createMappingVersion = async ({
     if (error.code === 11000) {
       throw createError(
         "Another mapping version was saved simultaneously. Please retry.",
-        409
+        409,
       );
     }
 
@@ -227,7 +219,7 @@ export const createColumnMapping = async ({
   if (importBatch.status !== "parsed") {
     throw createError(
       "The file must be parsed before creating a column mapping",
-      409
+      409,
     );
   }
 
@@ -238,7 +230,7 @@ export const createColumnMapping = async ({
   const validatedMappings = validateMappings(
     mappings,
     importBatch.detectedHeaders,
-    importBatch.fileType
+    importBatch.fileType,
   );
 
   return createMappingVersion({
@@ -258,9 +250,7 @@ export const getColumnMappingVersions = async ({
   fileType,
 }) => {
   if (!sourceKey || !fileType) {
-    throw createError(
-      "Both sourceKey and fileType are required"
-    );
+    throw createError("Both sourceKey and fileType are required");
   }
 
   if (!STANDARD_FIELDS[fileType]) {
@@ -279,8 +269,7 @@ export const getColumnMappingVersions = async ({
   return {
     sourceKey: sourceKey.trim().toLowerCase(),
     fileType,
-    activeMapping:
-      versions.find((version) => version.isActive) || null,
+    activeMapping: versions.find((version) => version.isActive) || null,
     versions,
   };
 };

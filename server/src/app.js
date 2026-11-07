@@ -1,4 +1,3 @@
-
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -6,6 +5,8 @@ import rateLimit from "express-rate-limit";
 import authRoutes from "./routes/auth.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
 import columnMappingRoutes from "./routes/column-mapping.routes.js";
+import reconciliationRoutes from "./routes/reconciliation.routes.js";
+import rateCardRoutes from "./routes/rate-card.routes.js";
 
 const app = express();
 
@@ -17,7 +18,7 @@ app.use(
   cors({
     origin: process.env.CLIENT_URL || "http://localhost:5173",
     credentials: true,
-  })
+  }),
 );
 
 // Request body parsing
@@ -34,6 +35,7 @@ const apiLimiter = rateLimit({
 
 app.use("/api", apiLimiter);
 app.use("/api/mappings", columnMappingRoutes);
+app.use("/api/rate-cards", rateCardRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {
@@ -47,6 +49,7 @@ app.get("/api/health", (req, res) => {
 // Authentication routes
 app.use("/api/auth", authRoutes);
 app.use("/api/uploads", uploadRoutes);
+app.use("/api/reconciliation", reconciliationRoutes);
 
 // Handle unknown routes
 app.use((req, res) => {
