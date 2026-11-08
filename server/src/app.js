@@ -2,19 +2,19 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+
 import authRoutes from "./routes/auth.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
 import columnMappingRoutes from "./routes/column-mapping.routes.js";
 import reconciliationRoutes from "./routes/reconciliation.routes.js";
 import rateCardRoutes from "./routes/rate-card.routes.js";
 import claimsRoutes from "./routes/claims.routes.js";
+import dashboardRoutes from "./routes/dashboard.routes.js";
 
 const app = express();
 
-// Security headers
 app.use(helmet());
 
-// Frontend-backend communication
 app.use(
   cors({
     origin: process.env.CLIENT_URL || "http://localhost:5173",
@@ -22,11 +22,9 @@ app.use(
   }),
 );
 
-// Request body parsing
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-// API rate limiting
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 200,
@@ -35,11 +33,15 @@ const apiLimiter = rateLimit({
 });
 
 app.use("/api", apiLimiter);
+
+app.use("/api/auth", authRoutes);
+app.use("/api/uploads", uploadRoutes);
 app.use("/api/mappings", columnMappingRoutes);
 app.use("/api/rate-cards", rateCardRoutes);
+app.use("/api/reconciliation", reconciliationRoutes);
 app.use("/api/claims", claimsRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
-// Health check
 app.get("/api/health", (req, res) => {
   res.status(200).json({
     success: true,
@@ -48,12 +50,6 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// Authentication routes
-app.use("/api/auth", authRoutes);
-app.use("/api/uploads", uploadRoutes);
-app.use("/api/reconciliation", reconciliationRoutes);
-
-// Handle unknown routes
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -61,7 +57,6 @@ app.use((req, res) => {
   });
 });
 
-// Central error handler
 app.use((error, req, res, next) => {
   console.error(error);
 

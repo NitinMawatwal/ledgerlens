@@ -1,4 +1,5 @@
 
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowDownRight,
@@ -11,45 +12,46 @@ import {
   Plus,
   Wallet,
 } from "lucide-react";
+import api from "../services/api";
 
-const transactions = [
-  {
-    id: "ORD-W-204118",
-    partner: "Website",
-    date: "05 Nov 2026",
-    expected: "₹1,409.00",
-    received: "₹0.00",
-    difference: "-₹1,409.00",
-    status: "Unpaid",
-  },
-  {
-    id: "ORD-M-88120",
-    partner: "Marketplace 1",
-    date: "04 Nov 2026",
-    expected: "₹899.00",
-    received: "₹862.00",
-    difference: "-₹37.00",
-    status: "Short paid",
-  },
-  {
-    id: "ORD-W-204377",
-    partner: "Website",
-    date: "04 Nov 2026",
-    expected: "-₹96.00",
-    received: "-₹142.00",
-    difference: "-₹46.00",
-    status: "Overcharged",
-  },
-  {
-    id: "ORD-W-204401",
-    partner: "Website",
-    date: "03 Nov 2026",
-    expected: "₹2,180.00",
-    received: "₹2,180.00",
-    difference: "₹0.00",
-    status: "Settled",
-  },
-];
+const formatCurrency = (amount) =>
+  new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2,
+  }).format(amount || 0);
+
+const formatDate = (date) => {
+  if (!date) return "—";
+
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(date));
+};
+
+const formatNumber = (number) =>
+  new Intl.NumberFormat("en-IN").format(number || 0);
+
+const getGreeting = () => {
+  const hour = new Date().getHours();
+
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+};
+
+const getStatusLabel = (status) => {
+  const labels = {
+    short_paid: "Short paid",
+    unpaid_past_due: "Unpaid",
+    freight_overcharged: "Overcharged",
+    needs_review: "Needs review",
+  };
+
+  return labels[status] || status;
+};
 
 function MetricCard({ label, value, note, icon: Icon, variant }) {
   return (
@@ -81,12 +83,142 @@ function StatusBadge({ status }) {
 function Dashboard() {
   const navigate = useNavigate();
 
+  const [dashboard, setDashboard] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchDashboard = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await api.get("/dashboard/summary");
+
+        if (isMounted) {
+          setDashboard(response.data.data);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(
+            err.response?.data?.message ||
+              "Unable to load dashboard data. Please try again.",
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchDashboard();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="dashboard-content">
+        <section className="page-heading">
+          <div>
+            <span className="eyebrow">FINANCE OVERVIEW</span>
+            <h1>Loading dashboard...</h1>
+            <p>Fetching your latest reconciliation data.</p>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="dashboard-content">
+        <section className="page-heading">
+          <div>
+            <span className="eyebrow">FINANCE OVERVIEW</span>
+            <h1>Dashboard unavailable</h1>
+            <p>{error}</p>
+          </div>
+
+          <button
+            className="primary-button"
+            onClick={() => window.location.reload()}
+          >
+            Retry
+          </button>
+        </section>
+      </div>
+    );
+  }
+
+  const reconciliation = dashboard?.reconciliation || {};
+  const claims = dashboard?.claims || {};
+  const exposure = reconciliation.exposureBreakdown || {};
+
+  const totalOrders = reconciliation.totalOrders || 0;
+  const matchedOrders = reconciliation.matchedOrders || 0;
+  const matchRate = reconciliation.matchRate || 0;
+  const moneyAtRisk = reconciliation.moneyAtRisk || 0;
+
+  const activeClaims = claims.activeCount || 0;
+  const outstandingAmount = claims.outstandingAmount || 0;
+  const recoveredAmount = claims.recoveredAmount || 0;
+
+  const shortPaid = exposure.shortPaid || 0;
+  const unpaid = exposure.unpaid || 0;
+  const freightOvercharged = exposure.freightOvercharged || 0;
+  const otherExposure = exposure.other || 0;
+
+  const totalExposure =
+    shortPaid + unpaid + freightOvercharged + otherExposure;
+
+  const getBarWidth = (amount) =>
+    totalExposure > 0 ? `${(amount / totalExposure) * 100}%` : "0%";
+
+  const recentDiscrepancies = reconciliation.recentDiscrepancies || [];
+
+  const exceptions = [
+    {
+      label: "Unpaid settlements",
+      description: "Orders awaiting payment",
+      count: reconciliation.unpaidOrders || 0,
+      icon: IndianRupee,
+      variant: "red-bg",
+    },
+    {
+      label: "Short payments",
+      description: "Orders with payment differences",
+      count: reconciliation.shortPaidOrders || 0,
+      icon: ArrowDownRight,
+      variant: "amber-bg",
+    },
+    {
+      label: "Freight discrepancies",
+      description: "Charges exceeding expected freight",
+      count: reconciliation.freightOverchargedOrders || 0,
+      icon: Wallet,
+      variant: "blue-bg",
+    },
+  ];
+
   return (
     <div className="dashboard-content">
       <section className="page-heading">
         <div>
-          <div className="eyebrow">THURSDAY, 05 NOVEMBER 2026</div>
-          <h1>Good morning, Arjun.</h1>
+          <div className="eyebrow">
+            {new Date().toLocaleDateString("en-IN", {
+              weekday: "long",
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
+            }).toUpperCase()}
+          </div>
+          <h1>{getGreeting()}.</h1>
           <p>Here's what's happening with your reconciliations.</p>
         </div>
 
@@ -102,32 +234,32 @@ function Dashboard() {
       <section className="metrics-grid">
         <MetricCard
           label="Total orders"
-          value="30,000"
-          note="Across all sales channels"
+          value={formatNumber(totalOrders)}
+          note="In the latest reconciliation"
           icon={Package}
           variant="blue"
         />
 
         <MetricCard
           label="Successfully matched"
-          value="28,460"
-          note="94.9% match rate"
+          value={formatNumber(matchedOrders)}
+          note={`${matchRate.toFixed(1)}% match rate`}
           icon={CheckCircle2}
           variant="green"
         />
 
         <MetricCard
           label="Money at risk"
-          value="₹4.82L"
-          note="Across 1,240 exceptions"
+          value={formatCurrency(moneyAtRisk)}
+          note="Across identified discrepancies"
           icon={IndianRupee}
           variant="amber"
         />
 
         <MetricCard
           label="Pending claims"
-          value="186"
-          note="₹2.14L awaiting recovery"
+          value={formatNumber(activeClaims)}
+          note={`${formatCurrency(outstandingAmount)} awaiting recovery`}
           icon={Clock3}
           variant="red"
         />
@@ -140,30 +272,60 @@ function Dashboard() {
               <span className="eyebrow">FINANCIAL EXPOSURE</span>
               <h3>Money at risk</h3>
             </div>
-            <span className="muted-label">November 2026</span>
+            <span className="muted-label">
+              Latest reconciliation
+            </span>
           </div>
 
-          <div className="exposure-value">₹4,82,450</div>
+          <div className="exposure-value">
+            {formatCurrency(moneyAtRisk)}
+          </div>
+
           <p className="exposure-caption">
-            Total amount identified across unresolved discrepancies.
+            Total amount identified across reconciliation discrepancies.
           </p>
 
           <div className="exposure-bar">
-            <div className="bar-short" />
-            <div className="bar-unpaid" />
-            <div className="bar-freight" />
+            <div
+              className="bar-short"
+              style={{ width: getBarWidth(shortPaid) }}
+            />
+            <div
+              className="bar-unpaid"
+              style={{ width: getBarWidth(unpaid) }}
+            />
+            <div
+              className="bar-freight"
+              style={{ width: getBarWidth(freightOvercharged + otherExposure) }}
+            />
           </div>
 
           <div className="legend">
             <span>
-              <i className="dot amber-dot" /> Short paid <strong>₹1.84L</strong>
+              <i className="dot amber-dot" /> Short paid{" "}
+              <strong>{formatCurrency(shortPaid)}</strong>
             </span>
+
             <span>
-              <i className="dot red-dot" /> Unpaid <strong>₹2.14L</strong>
+              <i className="dot red-dot" /> Unpaid{" "}
+              <strong>{formatCurrency(unpaid)}</strong>
             </span>
+
             <span>
-              <i className="dot blue-dot" /> Other <strong>₹0.84L</strong>
+              <i className="dot blue-dot" /> Freight overcharged{" "}
+              <strong>{formatCurrency(freightOvercharged)}</strong>
             </span>
+
+            {otherExposure > 0 && (
+              <span>
+                Other <strong>{formatCurrency(otherExposure)}</strong>
+              </span>
+            )}
+          </div>
+
+          <div className="exposure-caption">
+            TCS: {formatCurrency(reconciliation.tcsAmount)} · TDS:{" "}
+            {formatCurrency(reconciliation.tdsAmount)} (reported separately)
           </div>
         </div>
 
@@ -176,37 +338,34 @@ function Dashboard() {
             <CircleAlert size={19} className="attention-icon" />
           </div>
 
-          <div className="exception-item">
-            <div className="exception-icon red-bg">
-              <IndianRupee size={17} />
-            </div>
-            <div>
-              <strong>Unpaid settlements</strong>
-              <span>42 orders need follow-up</span>
-            </div>
-            <b>42</b>
-          </div>
+          {exceptions.map((item) => {
+            const Icon = item.icon;
 
-          <div className="exception-item">
-            <div className="exception-icon amber-bg">
-              <ArrowDownRight size={17} />
-            </div>
-            <div>
-              <strong>Short payments</strong>
-              <span>96 orders have a difference</span>
-            </div>
-            <b>96</b>
-          </div>
+            return (
+              <div className="exception-item" key={item.label}>
+                <div className={`exception-icon ${item.variant}`}>
+                  <Icon size={17} />
+                </div>
+
+                <div>
+                  <strong>{item.label}</strong>
+                  <span>{item.description}</span>
+                </div>
+
+                <b>{formatNumber(item.count)}</b>
+              </div>
+            );
+          })}
 
           <div className="exception-item">
             <div className="exception-icon blue-bg">
-              <Wallet size={17} />
+              <Package size={17} />
             </div>
             <div>
-              <strong>Freight discrepancies</strong>
-              <span>48 charges need review</span>
+              <strong>Returns not received</strong>
+              <span>Awaiting warehouse confirmation</span>
             </div>
-            <b>48</b>
+            <b>{formatNumber(reconciliation.returnsNotReceived)}</b>
           </div>
         </div>
       </section>
@@ -231,7 +390,7 @@ function Dashboard() {
             <thead>
               <tr>
                 <th>ORDER ID</th>
-                <th>CHANNEL</th>
+                <th>PARTNER</th>
                 <th>DATE</th>
                 <th>EXPECTED</th>
                 <th>RECEIVED</th>
@@ -241,33 +400,47 @@ function Dashboard() {
             </thead>
 
             <tbody>
-              {transactions.map((transaction) => (
-                <tr key={transaction.id}>
-                  <td className="order-id">{transaction.id}</td>
-                  <td>{transaction.partner}</td>
-                  <td className="muted-cell">{transaction.date}</td>
-                  <td>{transaction.expected}</td>
-                  <td>{transaction.received}</td>
-                  <td
-                    className={
-                      transaction.difference === "₹0.00"
-                        ? "positive"
-                        : "negative"
-                    }
-                  >
-                    {transaction.difference}
-                  </td>
-                  <td>
-                    <StatusBadge status={transaction.status} />
+              {recentDiscrepancies.length > 0 ? (
+                recentDiscrepancies.map((item, index) => {
+                  const isFreight = item.status === "freight_overcharged";
+                  const difference = Math.abs(item.difference || 0);
+
+                  return (
+                    <tr key={`${item.orderId}-${item.status}-${index}`}>
+                      <td className="order-id">{item.orderId}</td>
+                      <td>{item.partner || "—"}</td>
+                      <td className="muted-cell">
+                        {formatDate(item.createdAt)}
+                      </td>
+                      <td>{formatCurrency(item.expected)}</td>
+                      <td>{formatCurrency(item.actual)}</td>
+                      <td className="negative">
+                        {isFreight ? "+" : "-"}
+                        {formatCurrency(difference)}
+                      </td>
+                      <td>
+                        <StatusBadge
+                          status={getStatusLabel(item.status)}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan="7" className="muted-cell">
+                    No discrepancies found in the latest reconciliation.
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
 
         <div className="table-footer">
-          <span>Showing 4 sample transactions</span>
+          <span>
+            Showing {recentDiscrepancies.length} recent discrepancies
+          </span>
           <button
             className="text-button"
             onClick={() => navigate("/reconciliation")}
@@ -277,9 +450,53 @@ function Dashboard() {
         </div>
       </section>
 
+      <section className="insight-row">
+        <div className="insight-main">
+          <div className="section-heading">
+            <div>
+              <span className="eyebrow">CLAIMS RECOVERY</span>
+              <h3>Recovery overview</h3>
+            </div>
+          </div>
+
+          <div className="exposure-value">
+            {formatCurrency(recoveredAmount)}
+          </div>
+          <p className="exposure-caption">
+            Amount recovered from {formatNumber(claims.recoveredCount)} claims.
+          </p>
+
+          <div className="exposure-caption">
+            Outstanding: <strong>{formatCurrency(outstandingAmount)}</strong>
+          </div>
+        </div>
+
+        <div className="insight-side">
+          <div className="section-heading">
+            <div>
+              <span className="eyebrow">CLAIM AGING</span>
+              <h3>Outstanding by age</h3>
+            </div>
+          </div>
+
+          {Object.entries(claims.ageBreakdown || {}).map(([age, amount]) => (
+            <div className="exception-item" key={age}>
+              <div>
+                <strong>{age}</strong>
+              </div>
+              <b>{formatCurrency(amount)}</b>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <footer className="dashboard-footer">
         <span>LedgerLens · Finance operations</span>
-        <span>Demo workspace · Sample data</span>
+        <span>
+          {reconciliation.runId
+            ? `Latest run · ${reconciliation.runId}`
+            : "No reconciliation run yet"}
+        </span>
       </footer>
     </div>
   );
