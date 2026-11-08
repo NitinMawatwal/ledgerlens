@@ -804,3 +804,11 @@ td {
     font-size: 8px;
   }
 }
+
+.auth-loading {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  color: #64748b;
+  font-size: 14px;
+}

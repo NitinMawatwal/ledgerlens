@@ -7,6 +7,7 @@ import uploadRoutes from "./routes/upload.routes.js";
 import columnMappingRoutes from "./routes/column-mapping.routes.js";
 import reconciliationRoutes from "./routes/reconciliation.routes.js";
 import rateCardRoutes from "./routes/rate-card.routes.js";
+import claimsRoutes from "./routes/claims.routes.js";
 
 const app = express();
 
@@ -36,6 +37,7 @@ const apiLimiter = rateLimit({
 app.use("/api", apiLimiter);
 app.use("/api/mappings", columnMappingRoutes);
 app.use("/api/rate-cards", rateCardRoutes);
+app.use("/api/claims", claimsRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {
