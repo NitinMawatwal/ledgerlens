@@ -16,6 +16,7 @@ import Uploads from "./pages/Uploads";
 import Claims from "./pages/Claims";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
+import AccountSettings from "./pages/AccountSettings";
 
 import {
   getCurrentUser,
@@ -89,7 +90,12 @@ function App() {
           <Route path="uploads" element={<Uploads />} />
           <Route path="claims" element={<Claims />} />
           <Route path="analytics" element={<Analytics />} />
+
           <Route path="settings" element={<Settings />} />
+          <Route
+            path="account-settings"
+            element={<AccountSettings />}
+          />
         </Route>
       </Route>
 

@@ -2,8 +2,10 @@ import {
   createColumnMapping,
   getColumnMappingVersions,
   rollbackColumnMapping,
+  suggestColumnMapping,
 } from "../services/column-mapping.service.js";
 
+// Save approved column mapping
 export const saveColumnMapping = async (req, res) => {
   const mapping = await createColumnMapping({
     importBatchId: req.body.importBatchId,
@@ -21,6 +23,7 @@ export const saveColumnMapping = async (req, res) => {
   });
 };
 
+// Get mapping history
 export const getColumnMappings = async (req, res) => {
   const result = await getColumnMappingVersions({
     workspaceId: req.user.workspaceId,
@@ -34,6 +37,7 @@ export const getColumnMappings = async (req, res) => {
   });
 };
 
+// Roll back to an earlier mapping version
 export const rollbackMapping = async (req, res) => {
   const mapping = await rollbackColumnMapping({
     mappingId: req.params.id,
@@ -47,5 +51,19 @@ export const rollbackMapping = async (req, res) => {
     data: {
       mapping,
     },
+  });
+};
+
+// Generate AI mapping suggestions (does not save anything)
+export const suggestMapping = async (req, res) => {
+  const result = await suggestColumnMapping({
+    importBatchId: req.body.importBatchId,
+    workspaceId: req.user.workspaceId,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "AI mapping suggestions generated successfully",
+    data: result,
   });
 };

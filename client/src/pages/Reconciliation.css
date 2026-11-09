@@ -1,0 +1,718 @@
+.recon-page {
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 30px;
+    color: #172b43;
+}
+
+.recon-page-heading,
+.recon-section-heading,
+.recon-run-info,
+.recon-run-footer,
+.recon-selection-footer,
+.recon-results-toolbar,
+.recon-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.recon-page-heading {
+    margin-bottom: 28px;
+}
+
+.recon-page-heading h1 {
+    margin: 5px 0 8px;
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.8px;
+}
+
+.recon-page-heading p,
+.recon-section-heading p,
+.recon-run-info p {
+    margin: 0;
+    color: #758399;
+    font-size: 14px;
+}
+
+.recon-eyebrow {
+    color: #8290a4;
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 1.1px;
+}
+
+.recon-card {
+    margin-bottom: 24px;
+    padding: 25px;
+    border: 1px solid #e5eaf0;
+    border-radius: 12px;
+    background: #fff;
+}
+
+.recon-section-heading {
+    margin-bottom: 24px;
+}
+
+.recon-section-heading h2,
+.recon-run-info h2 {
+    margin: 5px 0 7px;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.recon-primary-button,
+.recon-secondary-button,
+.recon-text-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 42px;
+    padding: 0 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 650;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.recon-primary-button {
+    border: 1px solid #193750;
+    background: #193750;
+    color: white;
+}
+
+.recon-primary-button:hover:not(:disabled) {
+    background: #254c69;
+}
+
+.recon-secondary-button {
+    border: 1px solid #dce4ed;
+    background: white;
+    color: #344a61;
+}
+
+.recon-secondary-button:hover:not(:disabled) {
+    background: #f5f8fb;
+}
+
+.recon-text-button {
+    min-height: 34px;
+    padding: 0 8px;
+    border: none;
+    background: transparent;
+    color: #315a78;
+}
+
+.recon-primary-button:disabled,
+.recon-secondary-button:disabled,
+.recon-text-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.recon-alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+    padding: 13px 15px;
+    border: 1px solid;
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+.recon-alert span {
+    flex: 1;
+}
+
+.recon-alert button {
+    border: 0;
+    background: transparent;
+    font-size: 12px;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.recon-alert.error {
+    border-color: #f3caca;
+    background: #fff6f6;
+    color: #a33434;
+}
+
+.recon-alert.success {
+    border-color: #cce8d7;
+    background: #f2fbf5;
+    color: #247448;
+}
+
+.recon-batch-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.recon-batch-category {
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid #e8edf2;
+    border-radius: 9px;
+    background: #fbfcfd;
+}
+
+.recon-category-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 13px;
+}
+
+.recon-category-heading strong {
+    font-size: 13px;
+}
+
+.recon-category-heading span {
+    color: #8491a2;
+    font-size: 11px;
+}
+
+.recon-batch-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    margin-top: 9px;
+    padding: 12px;
+    border: 1px solid #e4eaf0;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+}
+
+.recon-batch-option.selected {
+    border-color: #91aabd;
+    background: #f4f8fb;
+}
+
+.recon-batch-option.disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.recon-batch-option input {
+    width: 16px;
+    height: 16px;
+    margin-top: 3px;
+    accent-color: #193750;
+}
+
+.recon-batch-option-content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    min-width: 0;
+}
+
+.recon-batch-option-content strong {
+    overflow-wrap: anywhere;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.recon-batch-option-content small {
+    color: #8491a2;
+    font-size: 11px;
+}
+
+.recon-no-batch {
+    padding: 15px 0;
+    color: #929eac;
+    font-size: 12px;
+}
+
+.recon-badge {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 4px 8px;
+    border-radius: 5px;
+    font-size: 10px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.recon-badge.success {
+    background: #e8f5ed;
+    color: #26754a;
+}
+
+.recon-badge.danger {
+    background: #fff0ee;
+    color: #b34338;
+}
+
+.recon-badge.warning {
+    background: #fff5df;
+    color: #946512;
+}
+
+.recon-badge.neutral {
+    background: #edf1f5;
+    color: #647386;
+}
+
+.recon-selection-footer {
+    flex-wrap: wrap;
+    margin-top: 20px;
+    padding-top: 17px;
+    border-top: 1px solid #edf0f4;
+}
+
+.recon-selection-footer>div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.recon-selection-footer strong,
+.recon-run-footer strong {
+    font-size: 13px;
+}
+
+.recon-selection-footer span,
+.recon-run-footer span {
+    color: #8491a2;
+    font-size: 11px;
+}
+
+.recon-missing-types {
+    color: #a66d1b !important;
+}
+
+.recon-run-footer {
+    flex-wrap: wrap;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #edf0f4;
+}
+
+.recon-run-footer>div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    max-width: 620px;
+}
+
+.recon-run-info {
+    margin: 28px 0 18px;
+}
+
+.recon-run-info .recon-badge {
+    align-self: flex-start;
+}
+
+.recon-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.recon-summary-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    padding: 20px;
+    border: 1px solid #e5eaf0;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.recon-summary-card>span {
+    color: #758399;
+    font-size: 12px;
+}
+
+.recon-summary-card strong {
+    overflow-wrap: anywhere;
+    font-size: 25px;
+    font-weight: 750;
+    letter-spacing: -0.5px;
+}
+
+.recon-summary-card small {
+    color: #94a0ae;
+    font-size: 11px;
+}
+
+.recon-summary-card .success-text {
+    color: #278451;
+}
+
+.recon-summary-card .danger-text {
+    color: #c24d43;
+}
+
+.recon-summary-card .warning-text {
+    color: #b27b20;
+}
+
+.recon-summary-card.risk-card {
+    border-color: #ead9c4;
+    background: #fffbf6;
+}
+
+.recon-summary-card.risk-card strong {
+    color: #a85e27;
+    font-size: 22px;
+}
+
+.recon-results-card {
+    padding-bottom: 15px;
+}
+
+.recon-result-count {
+    color: #728196;
+    font-size: 12px;
+}
+
+.recon-results-toolbar {
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+.recon-search {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: min(350px, 100%);
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid #dfe6ed;
+    border-radius: 7px;
+    color: #8592a3;
+}
+
+.recon-search input {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    color: #263b50;
+    font: inherit;
+    font-size: 12px;
+}
+
+.recon-results-toolbar select {
+    min-width: 180px;
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid #dfe6ed;
+    border-radius: 7px;
+    background: white;
+    color: #344a61;
+    font-size: 12px;
+}
+
+.recon-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.recon-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.recon-table th {
+    padding: 13px 12px;
+    border-bottom: 1px solid #e7ecf1;
+    background: #f8fafc;
+    color: #8491a2;
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.recon-table td {
+    padding: 15px 12px;
+    border-bottom: 1px solid #edf0f4;
+    color: #43556a;
+    font-size: 12px;
+    vertical-align: middle;
+}
+
+.recon-table td strong {
+    color: #263b50;
+}
+
+.recon-status-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    min-width: 125px;
+}
+
+.recon-risk-value {
+    color: #b34b3e !important;
+    font-weight: 700;
+}
+
+.recon-expand-button,
+.recon-pagination button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid #e1e7ed;
+    border-radius: 6px;
+    background: white;
+    color: #4a5e73;
+    cursor: pointer;
+}
+
+.recon-expand-button:hover,
+.recon-pagination button:hover:not(:disabled) {
+    background: #f2f6f9;
+}
+
+.recon-expanded-row td {
+    padding: 0 !important;
+    background: #f9fbfd;
+}
+
+.recon-detail-panel {
+    padding: 22px;
+}
+
+.recon-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 17px;
+}
+
+.recon-detail-grid>div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.recon-detail-grid span {
+    color: #8995a4;
+    font-size: 11px;
+}
+
+.recon-detail-grid strong {
+    overflow-wrap: anywhere;
+    font-size: 13px;
+}
+
+.recon-review-reason {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    padding: 13px;
+    border: 1px solid #f0dfb9;
+    border-radius: 7px;
+    background: #fffaf0;
+    color: #96691c;
+}
+
+.recon-review-reason strong {
+    font-size: 12px;
+}
+
+.recon-review-reason p {
+    margin: 5px 0 0;
+    color: #806a42;
+    font-size: 12px;
+}
+
+.recon-freight-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    margin-top: 20px;
+}
+
+.recon-freight-breakdown>strong {
+    font-size: 12px;
+}
+
+.recon-freight-breakdown>div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 10px;
+    border: 1px solid #e8edf2;
+    border-radius: 6px;
+    color: #647386;
+    font-size: 11px;
+}
+
+.recon-evidence-counts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: 1px solid #e8edf2;
+    color: #718095;
+    font-size: 11px;
+}
+
+.recon-evidence-counts span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.recon-pagination {
+    margin-top: 18px;
+    color: #7b899b;
+    font-size: 11px;
+}
+
+.recon-pagination>div {
+    display: flex;
+    gap: 7px;
+}
+
+.recon-pagination button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.recon-loading,
+.recon-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 130px;
+    color: #8290a2;
+    font-size: 13px;
+}
+
+.recon-empty {
+    flex-direction: column;
+    gap: 8px;
+}
+
+.recon-empty strong {
+    color: #344a61;
+    font-size: 14px;
+}
+
+.recon-empty p {
+    margin: 0;
+    font-size: 12px;
+}
+
+.recon-muted {
+    color: #8b98a8;
+}
+
+.recon-first-run {
+    display: flex;
+    align-items: center;
+    gap: 17px;
+    margin-top: 25px;
+    padding: 22px;
+    border: 1px dashed #d6dfe8;
+    border-radius: 10px;
+    background: #fbfcfd;
+}
+
+.recon-first-run-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    background: #edf3f7;
+    color: #31536f;
+}
+
+.recon-first-run strong {
+    font-size: 13px;
+}
+
+.recon-first-run p {
+    margin: 5px 0 0;
+    color: #8491a2;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.recon-spin {
+    animation: recon-rotate 1s linear infinite;
+}
+
+@keyframes recon-rotate {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 1000px) {
+    .recon-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .recon-detail-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    .recon-page {
+        padding: 18px;
+    }
+
+    .recon-page-heading,
+    .recon-section-heading,
+    .recon-run-info {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .recon-batch-grid,
+    .recon-summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .recon-detail-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .recon-run-footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .recon-run-footer .recon-primary-button {
+        width: 100%;
+    }
+
+    .recon-results-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .recon-search,
+    .recon-results-toolbar select {
+        width: 100%;
+    }
+}

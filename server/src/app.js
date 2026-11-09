@@ -4,12 +4,15 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 
 import authRoutes from "./routes/auth.routes.js";
+import accountRoutes from "./routes/account.routes.js";
+import workspaceRoutes from "./routes/workspace.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
 import columnMappingRoutes from "./routes/column-mapping.routes.js";
 import reconciliationRoutes from "./routes/reconciliation.routes.js";
 import rateCardRoutes from "./routes/rate-card.routes.js";
 import claimsRoutes from "./routes/claims.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
+import analyticsRoutes from "./routes/analytics.routes.js";
 
 const app = express();
 
@@ -35,12 +38,15 @@ const apiLimiter = rateLimit({
 app.use("/api", apiLimiter);
 
 app.use("/api/auth", authRoutes);
+app.use("/api/account", accountRoutes);
+app.use("/api/workspace", workspaceRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/mappings", columnMappingRoutes);
 app.use("/api/rate-cards", rateCardRoutes);
 app.use("/api/reconciliation", reconciliationRoutes);
 app.use("/api/claims", claimsRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({

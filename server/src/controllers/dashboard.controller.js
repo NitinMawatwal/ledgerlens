@@ -212,21 +212,55 @@ export const getDashboardSummary = async (req, res, next) => {
         ),
       );
 
+      // Calculate each discrepancy category independently.
+      // An order can have both a payment shortfall and a freight overcharge.
       for (const result of results) {
         tcsAmount += result.tcsAmount || 0;
         tdsAmount += result.tdsAmount || 0;
 
-        const risk = result.moneyAtRisk || 0;
         const statuses = result.statuses || [];
+        let remainingRisk = Math.max(0, Number(result.moneyAtRisk) || 0);
 
+        // Payment shortfall: use settlement difference or COD difference.
         if (statuses.includes("short_paid")) {
-          exposureBreakdown.shortPaid += risk;
-        } else if (statuses.includes("unpaid_past_due")) {
-          exposureBreakdown.unpaid += risk;
-        } else if (statuses.includes("freight_overcharged")) {
-          exposureBreakdown.freightOvercharged += risk;
-        } else if (statuses.includes("needs_review")) {
-          exposureBreakdown.other += risk;
+          const settlementShortfall = Math.max(
+            0,
+            Number(result.settlementDifference) || 0,
+          );
+
+          const codShortfall = Math.max(0, Number(result.codDifference) || 0);
+
+          const shortPaidAmount =
+            settlementShortfall > 0 ? settlementShortfall : codShortfall;
+
+          const allocated = Math.min(remainingRisk, shortPaidAmount);
+
+          exposureBreakdown.shortPaid += allocated;
+          remainingRisk -= allocated;
+        }
+
+        // Freight overcharge is counted separately.
+        if (statuses.includes("freight_overcharged")) {
+          const freightOvercharge = Math.max(
+            0,
+            Number(result.freightDifference) || 0,
+          );
+
+          const allocated = Math.min(remainingRisk, freightOvercharge);
+
+          exposureBreakdown.freightOvercharged += allocated;
+          remainingRisk -= allocated;
+        }
+
+        // Unpaid past-due exposure.
+        if (statuses.includes("unpaid_past_due")) {
+          exposureBreakdown.unpaid += remainingRisk;
+          remainingRisk = 0;
+        }
+
+        // Any remaining unresolved exposure goes under Other.
+        if (statuses.includes("needs_review")) {
+          exposureBreakdown.other += remainingRisk;
         }
       }
 

@@ -16,6 +16,11 @@ const getId = (value) => {
 const getRecordIds = (result, field) =>
   (result[field] || []).map(getId).filter(Boolean);
 
+const getClaimKey = (orderId, claimType) =>
+  `${String(orderId || "")
+    .trim()
+    .toLowerCase()}::${claimType}`;
+
 async function getPartnerDetails(recordIds, workspaceId, fallbackType) {
   if (!recordIds.length) {
     return {
@@ -139,12 +144,38 @@ async function generateClaimsForRun({ runId, workspaceId, userId }) {
     workspaceId,
   }).lean();
 
+  // Find existing claims across ALL previous reconciliation runs.
+  // This prevents the same order/discrepancy from being claimed twice.
+  const orderIds = [
+    ...new Set(
+      results
+        .map((result) => result.orderId)
+        .filter(Boolean)
+        .map((orderId) => String(orderId).trim()),
+    ),
+  ];
+
+  const existingClaims = orderIds.length
+    ? await Claim.find({
+        workspaceId,
+        orderId: { $in: orderIds },
+      })
+        .select("orderId claimType status claimAmount")
+        .lean()
+    : [];
+
+  const existingClaimKeys = new Set(
+    existingClaims.map((claim) => getClaimKey(claim.orderId, claim.claimType)),
+  );
+
   const operations = [];
+  let skippedExistingClaims = 0;
 
   for (const result of results) {
     const statuses = result.statuses || [];
 
     const settlementRecordIds = getRecordIds(result, "settlementRecordIds");
+
     const codRecordIds = getRecordIds(result, "codRecordIds");
     const freightRecordIds = getRecordIds(result, "freightRecordIds");
     const returnRecordIds = getRecordIds(result, "returnRecordIds");
@@ -158,6 +189,7 @@ async function generateClaimsForRun({ runId, workspaceId, userId }) {
 
     const candidates = [];
 
+    // Settlement or COD short payment.
     if (
       statuses.includes("short_paid") &&
       Number(result.settlementDifference) > AMOUNT_TOLERANCE
@@ -188,6 +220,7 @@ async function generateClaimsForRun({ runId, workspaceId, userId }) {
       });
     }
 
+    // Freight overcharge.
     if (
       statuses.includes("freight_overcharged") &&
       Number(result.freightDifference) > AMOUNT_TOLERANCE
@@ -204,6 +237,7 @@ async function generateClaimsForRun({ runId, workspaceId, userId }) {
       });
     }
 
+    // Unpaid past due.
     if (statuses.includes("unpaid_past_due")) {
       candidates.push({
         claimType: "unpaid_past_due",
@@ -223,6 +257,7 @@ async function generateClaimsForRun({ runId, workspaceId, userId }) {
       });
     }
 
+    // Return investigation. This remains a zero-value investigation claim.
     if (statuses.includes("return_not_received")) {
       candidates.push({
         claimType: "return_not_received",
@@ -237,6 +272,14 @@ async function generateClaimsForRun({ runId, workspaceId, userId }) {
     }
 
     for (const candidate of candidates) {
+      const claimKey = getClaimKey(result.orderId, candidate.claimType);
+
+      // Preserve existing claims, including recovered and open claims.
+      if (existingClaimKeys.has(claimKey)) {
+        skippedExistingClaims++;
+        continue;
+      }
+
       const partner = await getPartnerDetails(
         candidate.recordIds,
         workspaceId,
@@ -265,10 +308,15 @@ async function generateClaimsForRun({ runId, workspaceId, userId }) {
             reconciliationResultId: result._id,
             claimType: candidate.claimType,
           },
-          update: { $setOnInsert: claimData },
+          update: {
+            $setOnInsert: claimData,
+          },
           upsert: true,
         },
       });
+
+      // Also prevent duplicate candidates during this generation run.
+      existingClaimKeys.add(claimKey);
     }
   }
 
@@ -276,18 +324,26 @@ async function generateClaimsForRun({ runId, workspaceId, userId }) {
     return {
       runId: String(run._id),
       claimsCreated: 0,
-      claimsAlreadyExisted: 0,
-      message: "No claimable discrepancies were found.",
+      claimsAlreadyExisted: skippedExistingClaims,
+      message:
+        skippedExistingClaims > 0
+          ? "No new claims created. Existing claims were preserved."
+          : "No claimable discrepancies were found.",
     };
   }
 
-  const writeResult = await Claim.bulkWrite(operations, { ordered: false });
+  const writeResult = await Claim.bulkWrite(operations, {
+    ordered: false,
+  });
+
+  const claimsCreated = writeResult.upsertedCount || 0;
 
   return {
     runId: String(run._id),
-    claimsCreated: writeResult.upsertedCount || 0,
-    claimsAlreadyExisted: operations.length - (writeResult.upsertedCount || 0),
-    message: "Claim generation completed.",
+    claimsCreated,
+    claimsAlreadyExisted:
+      skippedExistingClaims + operations.length - claimsCreated,
+    message: "Claim generation completed. Existing claims were preserved.",
   };
 }
 
